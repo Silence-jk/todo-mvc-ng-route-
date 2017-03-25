@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>路由模块的使用</title>
+	<script src="../node_modules/angular/angular.min.js"></script>
+	<script src="../node_modules/angular-route/angular-route.min.js"></script>
+</head>
+<body ng-app="app">
+<ul>
+	<li><a href="#/a">A</a></li>
+	<li><a href="#/b">B</a></li>
+</ul>
+<div ng-view></div>
+<script id="a_tmpl" type="text/ng-template">
+	<!-- 只有type="text/javascript"的script节点才会被当做JS执行 -->
+	<!-- script中的内容就算不能执行，也不可以显示在界面上 -->
+	<h1>{{title}}</h1>
+</script>
+<script>
+	/*templateUrl的两种写法
+	 第一种：在当前页面引入模板脚本<script id="a_tmpl" type="text/ng-template">
+	 第二种：新建一个html文件，使templateUrl指向那个文件，缺点在Google的network中可见，
+	 比第一次多了一个请求html文件的请求
+	 */
+	var app = angular.module('app', ['ngRoute']);
+	app.config(['$routeProvider','$locationProvider', function ($routeProvider,$locationProvider) {
+		/*		新的ngRoute
+		 decodeURIComponent('%2f')
+		 那个%2f 其实就是/。
+		 然后在新的ngRoute中默认的路由分割符号是!#，已经不是#了。
+		 对了，那个是可以配置的。可在config里通过hashPrefix干掉感叹号。
+		 $locationProvider.hashPrefix('');
+		 */
+		$locationProvider.hashPrefix('');
+		$routeProvider
+				.when('/students/:name?',{
+					controller: 'StudentsController',
+					templateUrl: 'a_tmpl'
+				})
+				.when('/a', {
+					controller: 'AController',
+					templateUrl: 'a_tmpl'
+				})
+				.when('/b', {
+					controller: 'BController',
+					templateUrl: '../view/b.html'
+				})
+				.otherwise({
+					//跳转到一个新地址
+					redirectTo: '/a'
+				})
+	}])
+
+//	$routeParams获取路由的参数,在此处即上面students的name
+	app.controller('StudentsController',['$scope','$routeParams', function ($scope,$routeParams) {
+		$scope.title = '你好' + $routeParams['name'] + '这是A控制器';
+	}])
+	app.controller('AController', ['$scope', function ($scope) {
+		$scope.title = '这是A控制器';
+	}]);
+	app.controller('BController', ['$scope', function ($scope) {
+		$scope.title = '这是B控制器'
+	}])
+</script>
+
+</body>
+</html>
